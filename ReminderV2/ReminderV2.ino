@@ -53,11 +53,11 @@ const char* password = myPASSWORD;
 const char *GScriptIdWrite = GoogleScriptIdWrite;
 #else
 //Network credentials
-const char*  ssid = "Airtel_9819822079";
-const char* password = "air83659"; //replace with your password
+const char*  ssid = "?????";
+const char* password = "?????"; //replace with your password
 //Google Script ID
 //const char *GScriptIdRead = "............"; //replace with you gscript id for reading the calendar
-const char *GScriptIdWrite = "AKfycbyap1gEXPcrEjZ1oKklTduobBSbRUX-DV4vkK-3TA5XnWJ44rShx6Kw"; //replace with you gscript id for writing the calendar
+const char *GScriptIdWrite = "??????; //replace with you gscript id for writing the calendar
 #endif
 
 #define NBR_EVENTS 4
