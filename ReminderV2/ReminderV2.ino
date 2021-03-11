@@ -42,7 +42,8 @@ const int httpsPort = 443;
 
 unsigned long entryCalender, entryPrintStatus, entryInterrupt, heartBeatEntry, heartBeatLedEntry;
 String url;
-
+int tempSensorValue;
+bool statusFlag;
 
 #define UPDATETIME 1800000
 
@@ -53,12 +54,13 @@ const char* password = myPASSWORD;
 const char *GScriptIdWrite = GoogleScriptIdWrite;
 #else
 //Network credentials
-const char*  ssid = "?????";
-const char* password = "?????"; //replace with your password
+const char*  ssid = "Airtel_9819822079";
+const char* password = "air83659"; //replace with your password
 //Google Script ID
-//const char *GScriptIdRead = "............"; //replace with you gscript id for reading the calendar
-const char *GScriptIdWrite = "??????; //replace with you gscript id for writing the calendar
+const char *GScriptIdSendMail = "AKfycbxSVNQPgeG6r-_I-ZV0TnVNYJqYUvOKB8-HloSE7XyRUqru3-RRo1w"; //replace with you gscript id for reading the calendar
+const char *GScriptIdWrite = "AKfycbyap1gEXPcrEjZ1oKklTduobBSbRUX-DV4vkK-3TA5XnWJ44rShx6Kw"; //replace with you gscript id for writing the calendar
 #endif
+//script.google.com/macros/s/AKfycbxSVNQPgeG6r-_I-ZV0TnVNYJqYUvOKB8-HloSE7XyRUqru3-RRo1w/exec
 
 #define NBR_EVENTS 4
 
@@ -129,49 +131,9 @@ void connectToWifi() {
   Serial.println("Connected to Google");
 }
 
-//void printStatus() {
-//  for (int i = 0; i < NBR_EVENTS; i++) {
-//    Serial.print("Task ");
-//    Serial.print(i);
-//    Serial.print(" Status ");
-//    Serial.println(taskStatus[i]);
-//  }
-//  Serial.println("----------");
-//}
 
-//void getCalendar() {
-//  //  Serial.println("Start Request");
-//  // HTTPSRedirect client(httpsPort);
-//  unsigned long getCalenderEntry = millis();
-//
-//  // Try to connect for a maximum of 5 times
-//  bool flag = false;
-//  for (int i = 0; i < 5; i++) {
-//    int retval = client->connect(host, httpsPort);
-//    if (retval == 1) {
-//      flag = true;
-//      break;
-//    }
-//    else
-//      Serial.println("Connection failed. Retrying...");
-//  }
-//  if (!flag) {
-//    Serial.print("Could not connect to server: ");
-//    Serial.println(host);
-//    Serial.println("Exiting...");
-//    ESP.reset();
-//  }
-//  //Fetch Google Calendar events
-//  String url = String("/macros/s/") + GScriptIdRead + "/exec";
-//  client->GET(url, host);
-//  calendarData = client->getResponseBody();
-//  Serial.print("Calendar Data---> ");
-//  Serial.println(calendarData);
-//  calenderUpToDate = true;
-//  yield();
-//}
 
-void createEvent(String title) {
+void createEvent(String title,String Status) {
   // Serial.println("Start Write Request");
 
   // Try to connect for a maximum of 5 times
@@ -191,58 +153,28 @@ void createEvent(String title) {
     Serial.println("Exiting...");
     ESP.reset();
   }
-  // Create event on Google Calendar
-  String url = String("/macros/s/") + GScriptIdWrite + "/exec" + "?title=" + title;
-  client->GET(url, host);
-  //  Serial.println(url);
-  Serial.println("Write Event created ");
+  if (Status=="Delivered")
+  {
+      // Create event on Google Calendar
+    String url = String("/macros/s/") + GScriptIdWrite + "/exec" + "?title=" + title;
+    client->GET(url, host);
+    //  Serial.println(url);
+    Serial.println("Write Event created ");
+  }  
+  else{    
+    //Send Email 
+    String url = String("/macros/s/") + GScriptIdSendMail + "/exec"+ "?SensorValue=" + title;
+    client->GET(url, host);
+    //  Serial.println(url);
+    Serial.println("Email Sent");
+  }
+  
+
   calenderUpToDate = false;
 }
 
-//void manageStatus() {
-//  for (int i = 0; i < NBR_EVENTS; i++) {
-//    switch (taskStatus[i]) {
-//      case none:
-//        if (switchPressed[i]) {
-//          digitalWrite(LEDpins[i], HIGH);
-//          while (!calenderUpToDate) getCalendar();
-//          if (!eventHere(i)) createEvent(possibleEvents[i]);
-//          Serial.print(i);
-//          Serial.println(" 0 -->1");
-//          //getCalendar();
-//          taskStatus[i] = due;
-//        } else {
-//          if (eventHere(i)) {
-//            digitalWrite(LEDpins[i], HIGH);
-//            Serial.print(i);
-//            Serial.println(" 0 -->1");
-//            taskStatus[i] = due;
-//          }
-//        }
-//        break;
-//      case due:
-//        if (switchPressed[i]) {
-//          digitalWrite(LEDpins[i], LOW);
-//          Serial.print(i);
-//          Serial.println(" 1 -->2");
-//          taskStatus[i] = done;
-//        }
-//        break;
-//      case done:
-//        if (calenderUpToDate && !eventHere(i)) {
-//          digitalWrite(LEDpins[i], LOW);
-//          Serial.print(i);
-//          Serial.println(" 2 -->0");
-//          taskStatus[i] = none;
-//        }
-//        break;
-//      default:
-//        break;
-//    }
-//    switchPressed[i] = false;
-//  }
-//  yield();
-//}
+
+
 
 bool eventHere(int task) {
   if (calendarData.indexOf(possibleEvents[task], 0) >= 0 ) {
@@ -256,30 +188,17 @@ bool eventHere(int task) {
   }
 }
 
-//ICACHE_RAM_ATTR void handleInterrupt() {
-//  if (millis() > entryInterrupt + 100) {
-//    entryInterrupt = millis();
-//    for (int i = 0; i < NBR_EVENTS; i++) {
-//      if (digitalRead(switchPins[i]) == LOW) {
-//        switchPressed[i] = true;
-//      }
-//    }
-//  }
-//}
+
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Reminder_V2");
-//  for (int i = 0; i < NBR_EVENTS; i++) {
-//    //pinMode(LEDpins[i], OUTPUT);
-//    //taskStatus[i] = none;  // Reset all LEDs
-//    pinMode(switchPins[i], INPUT_PULLUP);
-//    switchPressed[i] = false;
-//    attachInterrupt(digitalPinToInterrupt(switchPins[i]), handleInterrupt, FALLING);
-//  }
+
   connectToWifi();
   //getCalendar();
   entryCalender = millis();
+  tempSensorValue = 1024;
+  statusFlag = true;
 }
 
 
@@ -287,58 +206,65 @@ void loop()
 {
 
   int sensorValue = analogRead(A0);
+ 
+  
   // print out the value you read:
   Serial.write("Sensor Value : ");
   Serial.println(sensorValue);
-  Serial.write("Start of Timer : ");
-  Serial.println(entryCalender);
-  Serial.write("Current Timer : ");
-  Serial.println(millis());
+  //Serial.write("Start of Timer : ");
+  //Serial.println(entryCalender);
+  //Serial.write("Current Timer : ");
+  //Serial.println(millis());
+  Serial.write("Temp Sensor Value : ");
+  Serial.println(tempSensorValue);
   
-  delay(1000);        // delay in between reads for stability
-  
-  if ((millis() > entryCalender + UPDATETIME) and (sensorValue < 1000))
-  {
-    Serial.println("Event created");
-    //getCalendar();
-    entryCalender = millis();
-    createEvent(possibleEvents[0]);
-    Serial.write("New Timer : ");
-    Serial.println(entryCalender);
-  
-  }
-  
-  
-//  manageStatus();
-//  if (millis() > entryPrintStatus + 5000) {
-//    printStatus();
-//    entryPrintStatus = millis();
-//  }
-//  if (millis() > heartBeatEntry + 30000) {
-//    beat = true;
-//    heartBeatEntry = millis();
-//  }
-//  heartBeat();
-}
+  int diffValue=sensorValue-tempSensorValue;
 
-//void heartBeat() {
-//  if (beat) {
-//    if ( millis() > heartBeatLedEntry + 100) {
-//      heartBeatLedEntry = millis();
-//      if (beatLED < NBR_EVENTS) {
-//
-//        if (beatLED > 0) digitalWrite(LEDpins[beatLED - 1], LOW);
-//        digitalWrite(LEDpins[beatLED], HIGH);
-//        beatLED++;
-//      }
-//      else {
-//        for (int i = 0; i < NBR_EVENTS; i++) {
-//          if (taskStatus[i] == due) digitalWrite(LEDpins[i], HIGH);
-//          else digitalWrite(LEDpins[i], LOW);
-//        }
-//        beatLED = 0;
-//        beat = false;
-//      }
-//    }
+  Serial.write("Diif Value : ");
+  Serial.println(diffValue);
+  
+//  if (diffValue > 25)
+//  {
+//    Serial.println("Delivery collected");
+//    statusFlag = false;
 //  }
-//}
+//  if ((diffValue < 0) and (diffValue > -25))
+//  {
+//    Serial.println("Delivered in box");
+//    statusFlag = true;
+//    
+//  }
+  
+
+  //Inform about delivery got delivered
+  
+  //if ((millis() > entryCalender + UPDATETIME) and (sensorValue < 1000))
+
+  if (abs(diffValue) > 25) 
+  {
+    
+      if ((sensorValue < 1000))
+      {
+        //getCalendar();
+        entryCalender = millis();
+        
+        createEvent(String(sensorValue),"Delivered");
+        //Serial.println("Event created");
+        createEvent(String(sensorValue),String(statusFlag));
+        //Serial.println("Mail Sent");
+    
+        Serial.write("New Timer : ");
+        //Serial.println(entryCalender);
+       }
+       
+      if ((sensorValue > 1000) and diffValue!=0 )
+      {
+          //Case when delivery get collected
+          createEvent(String(sensorValue),String(statusFlag));
+      }
+  } 
+   
+   tempSensorValue = sensorValue;
+   delay(5000);        // delay in between reads for stability
+  
+}
