@@ -1,5 +1,6 @@
 /*
-
+	
+  Updated by Atul N Yadav in March 2021 for sending Gmail alert and adding event in calendar based on Sensor input
   Copyright <2018> <Andreas Spiess>
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -12,7 +13,6 @@
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
   DEALINGS IN THE SOFTWARE.
-
 
   Based on the HTTPS library of Sujay Phadke ( https://github.com/electronicsguy/ESP8266/tree/master/HTTPSRedirect )
 
@@ -54,11 +54,11 @@ const char* password = myPASSWORD;
 const char *GScriptIdWrite = GoogleScriptIdWrite;
 #else
 //Network credentials
-const char*  ssid = "Airtel_9819822079";
-const char* password = "air83659"; //replace with your password
+const char*  ssid = "XXXXXX";
+const char* password = "XXXXX"; //replace with your password
 //Google Script ID
-const char *GScriptIdSendMail = "AKfycbxSVNQPgeG6r-_I-ZV0TnVNYJqYUvOKB8-HloSE7XyRUqru3-RRo1w"; //replace with you gscript id for reading the calendar
-const char *GScriptIdWrite = "AKfycbyap1gEXPcrEjZ1oKklTduobBSbRUX-DV4vkK-3TA5XnWJ44rShx6Kw"; //replace with you gscript id for writing the calendar
+const char *GScriptIdSendMail = "XXXXXXXX"; //replace with you gscript id for reading the calendar
+const char *GScriptIdWrite = "XXXXXX"; //replace with you gscript id for writing the calendar
 #endif
 //script.google.com/macros/s/AKfycbxSVNQPgeG6r-_I-ZV0TnVNYJqYUvOKB8-HloSE7XyRUqru3-RRo1w/exec
 
@@ -175,7 +175,6 @@ void createEvent(String title,String Status) {
 
 
 
-
 bool eventHere(int task) {
   if (calendarData.indexOf(possibleEvents[task], 0) >= 0 ) {
     //    Serial.print("Task found ");
@@ -222,23 +221,7 @@ void loop()
 
   Serial.write("Diif Value : ");
   Serial.println(diffValue);
-  
-//  if (diffValue > 25)
-//  {
-//    Serial.println("Delivery collected");
-//    statusFlag = false;
-//  }
-//  if ((diffValue < 0) and (diffValue > -25))
-//  {
-//    Serial.println("Delivered in box");
-//    statusFlag = true;
-//    
-//  }
-  
 
-  //Inform about delivery got delivered
-  
-  //if ((millis() > entryCalender + UPDATETIME) and (sensorValue < 1000))
 
   if (abs(diffValue) > 25) 
   {
